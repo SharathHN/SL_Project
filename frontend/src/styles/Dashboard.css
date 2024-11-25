@@ -1,0 +1,91 @@
+.dashboard {
+  padding: 2rem;
+  background: linear-gradient(to bottom right, #e0f7fa, #b2ebf2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.dashboard-title {
+  font-size: 2rem;
+  color: #00796b;
+  margin-bottom: 2rem;
+}
+
+.dashboard-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.dashboard-button {
+  background-color: #00796b;
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1.25rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.dashboard-button:hover {
+  background-color: #004d40;
+  transform: scale(1.05);
+}
+
+/* General Table Styles */
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-family: Arial, sans-serif;
+}
+
+.appointments-table th,
+.appointments-table td {
+  border: 1px solid #ddd; /* Light border for cells */
+  padding: 0.75rem; /* Space inside cells */
+  text-align: left; /* Align content to the left */
+}
+
+.appointments-table th {
+  background-color: #00796b; /* Header background */
+  color: white; /* Header text color */
+  text-transform: uppercase; /* Make header text uppercase */
+  font-size: 0.875rem; /* Slightly smaller text for headers */
+}
+
+.appointments-table tr:nth-child(even) {
+  background-color: #f2f2f2; /* Light gray background for alternate rows */
+}
+
+.appointments-table tr:hover {
+  background-color: #e0f7fa; /* Light teal on hover */
+}
+
+.appointments-table td {
+  font-size: 1rem; /* Standard font size for cell content */
+  color: #333; /* Text color */
+}
+
+/* Button Styles */
+.action-button {
+  background-color: #00796b; /* Teal background */
+  color: white; /* White text */
+  padding: 0.5rem 1rem; /* Padding inside button */
+  border: none; /* No border */
+  border-radius: 4px; /* Slightly rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s ease; /* Smooth color transition */
+}
+
+.action-button:hover {
+  background-color: #004d40; /* Darker teal on hover */
+}

@@ -1,0 +1,38 @@
+.analytics-container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    background: #f9fafb;
+    color: #333;
+  }
+  
+  .analytics-container h2 {
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .statistics-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .card h3 {
+    color: #333;
+  }
+  
+  .card p {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+  }
+  

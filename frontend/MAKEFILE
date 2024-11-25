@@ -1,0 +1,57 @@
+# Define the name of the Docker image
+IMAGE_NAME=my_health_app
+CONTAINER_NAME=my_health_app_container
+
+# Default target
+.PHONY: help
+help:
+	@echo "Available commands:"
+	@echo "make build             - Build the Docker image"
+	@echo "make up                - Run the application with Docker Compose"
+	@echo "make down              - Stop the application and remove containers"
+	@echo "make clean             - Remove Docker images and unused resources"
+	@echo "make install           - Install required Python packages"
+	@echo "make run               - Run the application without Docker"
+	@echo "make lint              - Run pylint on Python code"
+	@echo "make format            - Auto-format Python code using black"
+
+# Build the Docker image
+.PHONY: build
+build:
+	@docker build -t $(IMAGE_NAME) .
+
+# Run the application with Docker Compose
+.PHONY: up
+up:
+	@docker-compose up -d
+
+# Stop the application and remove containers
+.PHONY: down
+down:
+	@docker-compose down
+
+# Clean up Docker images and resources
+.PHONY: clean
+clean:
+	@docker-compose down --volumes --remove-orphans
+	@docker rmi -f $(IMAGE_NAME)
+
+# Install required Python packages
+.PHONY: install
+install:
+	@pip install -r requirements.txt
+
+# Run the application without Docker
+.PHONY: run
+run:
+	@python3 run.py
+
+# Lint Python code
+.PHONY: lint
+lint:
+	@pylint app/*.py
+
+# Format Python code using black
+.PHONY: format
+format:
+	@black app/*.py

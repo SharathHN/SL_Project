@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - apm-server
+      - redis
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:7.16.2
+    environment:
+      - output.elasticsearch.hosts=["http://elasticsearch:9200"]
+    ports:
+      - "8200:8200"
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.16.2
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  celery-worker:
+    build: .
+    command: celery -A tasks worker --loglevel=info
+    depends_on:
+      - redis
+
+    celery-beat:
+    build: .
+    command: celery -A tasks beat --loglevel=info
+    depends_on:
+      - redis
+

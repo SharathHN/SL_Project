@@ -1,0 +1,107 @@
+.manage-doctors-container {
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    text-align: center;
+  }
+  
+  .manage-doctors-title {
+    font-size: 2rem;
+    color: #00796b;
+    margin-bottom: 2rem;
+    font-weight: bold;
+  }
+  
+  .manage-doctors-options {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+  }
+  
+  .manage-doctors-button {
+    background-color: #00796b;
+    color: white;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .manage-doctors-button:hover {
+    background-color: #004d40;
+    transform: scale(1.05);
+  }
+
+  .add-doctor-container {
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    text-align: center;
+  }
+  
+  .add-doctor-title {
+    font-size: 2rem;
+    color: #00796b;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .add-doctor-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  
+  .add-input {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  .add-input:focus {
+    outline: none;
+    border-color: #00796b;
+    box-shadow: 0 0 5px rgba(0, 121, 107, 0.3);
+  }
+  
+  .add-error-message {
+    color: #ff4d4d;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+  
+  .add-success-message {
+    color: #4caf50;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+  
+  .add-submit-button {
+    background-color: #00796b;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .add-submit-button:hover {
+    background-color: #004d40;
+    transform: scale(1.05);
+  }
+  
+  

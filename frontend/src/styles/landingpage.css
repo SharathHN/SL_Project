@@ -1,0 +1,74 @@
+/* src/styles/landingpage.css */
+.landing-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #e0f7fa, #80deea);
+    min-height: 100vh;
+    padding: 50px 20px;
+    color: #333;
+  }
+  
+  .hero-section {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .hero-section h1 {
+    font-size: 3rem;
+    color: #00796b;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .hero-section p {
+    font-size: 1.2rem;
+    color: #555;
+  }
+  
+  .role-cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .role-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px 20px;
+    width: 200px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .role-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0px 12px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .role-card h2 {
+    font-size: 1.5rem;
+    color: #00796b;
+    margin-bottom: 20px;
+  }
+  
+  .landing-button {
+    display: inline-block;
+    width: 100%;
+    padding: 10px 0;
+    margin-top: 10px;
+    font-size: 1rem;
+    color: #ffffff;
+    background: linear-gradient(135deg, #26a69a, #00796b);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .landing-button:hover {
+    background: linear-gradient(135deg, #00796b, #004d40);
+  }
+  
