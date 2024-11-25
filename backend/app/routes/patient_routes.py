@@ -9,31 +9,60 @@ from cryptography.fernet import Fernet
 from datetime import datetime
 import io
 import uuid
+import logging
+from opentelemetry import trace
+from opentelemetry.trace.status import Status, StatusCode
 
 
 
-
-
+# Initialize tracer and logger
+tracer = trace.get_tracer(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger("PatientAPI")
 patient_blueprint = Blueprint('patient_blueprint', __name__)
 
 
 @patient_blueprint.route('/api/patient/login', methods=['POST'])
-@capture_span()
 def login_patient():
-    try:
-        data = request.json
-        email = data.get('email')
-        password = data.get('password')
+    with tracer.start_as_current_span("login_patient_handler") as span:
+        try:
+            # Extract request data
+            with tracer.start_as_current_span("extract_request_data"):
+                data = request.json
+                email = data.get('email')
+                password = data.get('password')
 
-        patient = Patient.query.filter_by(email=email).first()
-        if patient and bcrypt.check_password_hash(patient.password, password):
-            access_token = create_access_token(identity={'id': patient.id, 'role': 'patient'})
-            # access_token = "random_thing"
-            return jsonify({'access_token': access_token}), 200
+                span.set_attributes({
+                    "input.email": email,
+                    "input.password_provided": bool(password)
+                })
 
-        return jsonify({'message': 'Invalid credentials'}), 401
-    except Exception as e:
-        return jsonify({'message': 'Error during login', 'error': str(e)}), 500
+            # Query the database for the patient
+            with tracer.start_as_current_span("fetch_patient_from_db"):
+                patient = Patient.query.filter_by(email=email).first()
+                span.set_attribute("patient_found", bool(patient))
+
+            # Validate the password
+            with tracer.start_as_current_span("validate_password"):
+                if patient and bcrypt.check_password_hash(patient.password, password):
+                    with tracer.start_as_current_span("generate_access_token"):
+                        access_token = create_access_token(identity={'id': patient.id, 'role': 'patient'})
+                        span.set_status(Status(StatusCode.OK))
+                        span.set_attribute("login_successful", True)
+                        logger.info("Patient login successful for email: %s", email)
+                        return jsonify({'access_token': access_token}), 200
+
+                span.add_event("Invalid credentials provided")
+                span.set_status(Status(StatusCode.ERROR, "Invalid credentials"))
+                logger.warning("Invalid login attempt for email: %s", email)
+                return jsonify({'message': 'Invalid credentials'}), 401
+
+        except Exception as e:
+            # Log and record exception in tracing
+            logger.error("Error during patient login: %s", str(e), exc_info=True)
+            span.record_exception(e)
+            span.set_status(Status(StatusCode.ERROR, "Error during login"))
+            return jsonify({'message': 'Error during login', 'error': str(e)}), 500
 
 @patient_blueprint.route('/api/patient/view-doctor/<int:doctor_id>', methods=['GET'])
 @jwt_required()
@@ -206,6 +235,42 @@ def register_patient():
         }), 201
     except Exception as e:
         return jsonify({'message': 'Error during registration', 'error': str(e)}), 500
+    
+tracer = trace.get_tracer(__name__)
+patient_blueprint = Blueprint('patient_blueprint', __name__)
+
+@patient_blueprint.route('/api/patient/<string:patient_id>', methods=['GET'])
+@jwt_required()
+def get_patient_by_id(patient_id):
+    with tracer.start_as_current_span("get_patient_by_id") as span:
+        span.set_attribute("input.patient_id", patient_id)
+        try:
+            patient = Patient.query.get(patient_id)
+            span.set_attribute("patient_found", bool(patient))
+            if not patient:
+                span.add_event("Patient not found")
+                span.set_status(Status(StatusCode.ERROR, "Patient not found"))
+                return jsonify({'message': 'Patient not found'}), 404
+            patient_data = {
+                'id': patient.id,
+                'name': patient.name,
+                'email': patient.email,
+                'date_of_birth': patient.date_of_birth.strftime('%Y-%m-%d') if patient.date_of_birth else None,
+                'height': patient.height,
+                'weight': patient.weight,
+                'blood_group': patient.blood_group,
+                'blood_pressure': patient.blood_pressure,
+                'medical_history': patient.medical_history,
+                'photos': patient.photos,
+                'created_at': patient.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            span.set_status(Status(StatusCode.OK))
+            return jsonify(patient_data), 200
+        except Exception as e:
+            span.record_exception(e)
+            span.set_status(Status(StatusCode.ERROR, "Error fetching patient details"))
+            return jsonify({'message': 'Error fetching patient details', 'error': str(e)}), 500
+
 
 @patient_blueprint.route('/api/specializations', methods=['GET'])
 def get_specializations():

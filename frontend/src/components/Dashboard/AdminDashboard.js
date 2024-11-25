@@ -13,16 +13,7 @@ function AdminDashboard() {
           className="dashboard-button" 
           onClick={() => navigate('/admin-dashboard/manage-doctors')} // Updated URL for Manage Doctors section
         >
-          Manage Doctorsid = db.Column(db.Integer, primary_key=True)
-    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=False)
-    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
-    appointment_date = db.Column(db.DateTime, nullable=True)  # Date and time of the appointment
-    status = db.Column(db.String(50), default="requested")  # Status: scheduled, completed, canceled, etc.
-    notes = db.Column(db.Text, nullable=True)  # Additional notes for the appointment
-    scans = db.Column(db.String(200), nullable=True)  # Path or filename for scans related to the appointment
-    reports = db.Column(db.String(200), nullable=True)  # Path or filename for reports related to the appointment
-    priority_score=db.Column(db.Integer,nullable=True)
-    queue_duration=db.Column(db.Integer,nullable=True)
+          Manage Doctors
         </button>
         <button 
           className="dashboard-button" 
