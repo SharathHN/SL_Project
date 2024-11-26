@@ -1,6 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode"
 import '../../styles/RequestAppointment.css';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { globalContext } from '../../App';
+
+
+
+
+const DefaultState = {
+  name: "",
+  access_token: "",
+  blood_group: "",
+  blood_pressure: "",
+  date_of_birth: "",
+  created: "",
+  height: "",
+  id: "",
+  medical_history: "",
+  photos: "",
+  weight: "",
+  email: "",
+  medical_id: '123456789',
+}
 
 function RequestAppointment() {
   const [specializations, setSpecializations] = useState([]);
@@ -10,6 +33,9 @@ function RequestAppointment() {
   const [appointmentDate, setAppointmentDate] = useState('');
   const [notes, setNotes] = useState('');
   const [message, setMessage] = useState('');
+  const {globalState, setGlobalState} = useContext(globalContext);
+
+  const navigate = useNavigate();
 
   // Fetch all specializations on component mount
   useEffect(() => {
@@ -28,13 +54,31 @@ function RequestAppointment() {
 
   const fetchDoctors = async (specialization) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/doctors?specialization=${specialization}`);
+      const response = await fetch(`http://127.0.0.1:5000/api/doctor1?specialization=${specialization}`);
       const data = await response.json();
       setDoctors(data.doctors);
     } catch (error) {
       console.error('Error fetching doctors:', error);
     }
   };
+
+
+  const handlesPatientLogout = ()=>{
+    let storedUserJWT = localStorage.getItem('patient_access_token');
+    if(storedUserJWT){
+      localStorage.removeItem('patient_access_token');
+    }
+    setGlobalState((state)=>{
+      return (
+        DefaultState
+      )
+    })
+    navigate('/');
+  }
+
+  const handlesBackButton = () => {
+    navigate('/patient-dashboard');
+  }
 
   const handleSpecializationChange = (e) => {
     const specialization = e.target.value;
@@ -99,7 +143,19 @@ function RequestAppointment() {
 
   return (
     <div className="request-appointment">
-      <h2 className="request-title">Request an Appointment</h2>
+      <div className="dashboard-navbar">
+        <div className='dashboard-navbar-right'>
+        <button className='dashboard-button' onClick={handlesBackButton}>
+          <ArrowBackIcon />
+        </button>
+        </div>
+        <h2 className="dashboard-title">Book an appointment</h2>
+        <div className='dashboard-navbar-right'>
+          <button className='dashboard-button' onClick={handlesPatientLogout}>
+          <LogoutIcon/>
+          </button>
+        </div>
+      </div>
       <form className="request-form" onSubmit={handleSubmit}>
         {message && (
           <p className={`message ${message.includes('successfully') ? 'success' : 'error'}`}>

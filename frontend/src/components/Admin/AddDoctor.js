@@ -50,7 +50,7 @@ function AddDoctor() {
         // Redirect to manage doctors page after a delay
         setTimeout(() => {
           navigate('/admin-dashboard/manage-doctors');
-        }, 2000);
+        }, 200);
       } else {
         const data = await response.json();
         setError(data.message || 'Failed to add doctor.');

@@ -8,7 +8,7 @@ function PatientLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const {globalState, setGlobalState} = useContext(globalContext)
+  const {globalState, setGlobalState} = useContext(globalContext);
   
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -32,18 +32,20 @@ function PatientLogin() {
       // Check if login was successful
       if (response.ok) {
         const data = await response.json();
-
+        
         // Check if JWT token is provided
         if (data.access_token) {
           // Save the access token in localStorage
-          localStorage.setItem('patient_access_token', data.access_token);
+            localStorage.setItem('patient_access_token', data.access_token);
+            // Redirect to the patient's dashboard
+            localStorage.setItem('globalState', JSON.stringify({...data}));
+            setGlobalState((state)=>{
+                return {
+                    ...data
+                }
+            });
 
-          // Redirect to the patient's dashboard
-          setGlobalState((state)=>{
-              return {
-                  ...state, username: "1"
-              }
-          })
+            
           navigate('/patient-dashboard');
         } else {
           setError('Login failed. No token received.');
@@ -52,15 +54,18 @@ function PatientLogin() {
         // Handle error response
         const errorData = await response.json();
         setError(errorData.message || 'Login failed. Please try again.');
+        setUsername('');
+        setPassword('');
       }
     } catch (err) {
       console.error('Error during login:', err);
       setError('An error occurred. Please try again later.');
+      setUsername('');
+      setPassword('');
     }
 
     // Clear input fields after submission
-    setUsername('');
-    setPassword('');
+    
   };
 
   return (

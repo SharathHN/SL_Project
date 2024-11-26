@@ -6,34 +6,76 @@ from elasticapm import capture_span
 import os
 from .. import bcrypt
 from cryptography.fernet import Fernet
-from datetime import datetime
+from datetime import datetime,timedelta
 import io
 import uuid
+import logging
+from opentelemetry import trace
+from opentelemetry.trace.status import Status, StatusCode
+from werkzeug.security import check_password_hash
+import json
 
 
 
+# Initialize tracer and logger
+tracer = trace.get_tracer(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger("PatientAPI")
 
 
-patient_blueprint = Blueprint('patient_blueprint', __name__)
+patient_blueprint = Blueprint('patient', __name__)
 
 
 @patient_blueprint.route('/api/patient/login', methods=['POST'])
-@capture_span()
 def login_patient():
-    try:
-        data = request.json
-        email = data.get('email')
-        password = data.get('password')
+    with tracer.start_as_current_span("login-patient-handler") as span:
+        try:
+            with tracer.start_as_current_span("extract-login-data"):
+                data = request.json
+                email = data.get('email')
+                password = data.get('password')
+                span.set_attribute("patient_email", email)
 
-        patient = Patient.query.filter_by(email=email).first()
-        if patient and bcrypt.check_password_hash(patient.password, password):
-            access_token = create_access_token(identity={'id': patient.id, 'role': 'patient'})
-            # access_token = "random_thing"
-            return jsonify({'access_token': access_token}), 200
+            with tracer.start_as_current_span("fetch-patient"):
+                patient = Patient.query.filter_by(email=email).first()
 
-        return jsonify({'message': 'Invalid credentials'}), 401
-    except Exception as e:
-        return jsonify({'message': 'Error during login', 'error': str(e)}), 500
+            with tracer.start_as_current_span("verify-password"):
+                if patient and bcrypt.check_password_hash(patient.password, password):
+                    with tracer.start_as_current_span("generate-access-token"):
+                        access_token = create_access_token(
+                            identity={'id': patient.id, 'role': 'patient'},
+                            expires_delta=timedelta(hours=1)
+                        )
+                        print(patient.photos)
+                        patient_data = {
+                            'id': patient.id,
+                            'name': patient.name,
+                            'email': patient.email,
+                            'date_of_birth': patient.date_of_birth.strftime('%Y-%m-%d') if patient.date_of_birth else None,
+                            'height': patient.height,
+                            'weight': patient.weight,
+                            'blood_group': patient.blood_group,
+                            'blood_pressure': patient.blood_pressure,
+                            'medical_history': patient.medical_history,
+                            'photos': patient.photos,
+                            'created_at': patient.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                            'access_token': access_token
+                        }
+                        logger.info("Patient logged in successfully: %s", email)
+                        return jsonify(patient_data), 200
+
+                else:
+                    logger.warning("Invalid login attempt for patient email: %s", email)
+                    span.add_event("Invalid credentials provided")
+                    span.set_status(Status(StatusCode.ERROR, "Invalid credentials"))
+                    return jsonify({'message': 'Invalid credentials'}), 401
+        except Exception as e:
+            logger.error("Error during patient login: %s", str(e), exc_info=True)
+            span.record_exception(e)
+            span.set_status(Status(StatusCode.ERROR, "Failed to login patient"))
+            return jsonify({'message': 'Error during login', 'error': str(e)}), 500
+
+
 
 @patient_blueprint.route('/api/patient/view-doctor/<int:doctor_id>', methods=['GET'])
 @jwt_required()
@@ -63,31 +105,32 @@ def view_doctor_profile(doctor_id):
 def edit_patient_profile():
     try:
         user_id = get_jwt_identity()['id']
-        data = request.json
+        print(f"JWT Identity: {user_id}")  # Debugging log
+
+        # Fetch patient from the database
         patient = Patient.query.get(user_id)
+        if not patient:
+            return jsonify({'message': 'Patient not found'}), 404
 
+        # Extract form fields from the multipart/form-data request
+
+        data = json.loads(request.data)
+        print(data)
+        print("wu shang")
+        print(data["blood_group"])
         # Update profile fields if provided
-        patient.name = data.get('name', patient.name)
-        patient.date_of_birth = data.get('date_of_birth', patient.date_of_birth)
-        patient.height = data.get('height', patient.height)
-        patient.weight = data.get('weight', patient.weight)
-        patient.blood_group = data.get('blood_group', patient.blood_group)
-        patient.blood_pressure = data.get('blood_pressure', patient.blood_pressure)
-
-        # Update profile photo if provided
-        if 'file' in request.files:
-            file = request.files['file']
-            if file and allowed_photo(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                patient.photos = filename
-
+        patient.name = data['name']
+        patient.date_of_birth = datetime.strptime(data['date_of_birth'], '%Y-%m-%d').date() if data['date_of_birth'] else patient.date_of_birth
+        patient.height = float(data['height']) if data['height'] else patient.height
+        patient.weight = float(data['weight']) if data['weight'] else patient.weight
+        patient.blood_group = data['blood_group']
+        patient.blood_pressure = data['blood_pressure']
+        base64_image = data['photos']
+        patient.photos = base64_image
         db.session.commit()
         return jsonify({'message': 'Profile updated successfully'}), 200
     except Exception as e:
-        return jsonify({'message': 'Error updating profile', 'error': str(e)}), 500
-    
+        return jsonify({'message': 'Error updating', 'error': str(e)}), 500
 
 @patient_blueprint.route('/api/patient/book-appointment', methods=['POST'])
 @jwt_required()
@@ -153,7 +196,6 @@ def download_report(appointment_id):
 # patient_blueprint = Blueprint('patient', __name__)
 
 @patient_blueprint.route('/api/patient/register', methods=['POST'])
-@capture_span()
 def register_patient():
     print("_________working1_________________")
     try:
@@ -206,6 +248,10 @@ def register_patient():
         }), 201
     except Exception as e:
         return jsonify({'message': 'Error during registration', 'error': str(e)}), 500
+    
+
+
+
 
 @patient_blueprint.route('/api/specializations', methods=['GET'])
 def get_specializations():
@@ -217,7 +263,7 @@ def get_specializations():
         return jsonify({'message': 'Error fetching specializations', 'error': str(e)}), 500
 
 # API to get doctors by specialization
-@patient_blueprint.route('/api/doctors', methods=['GET'])
+@patient_blueprint.route('/api/doctor1', methods=['GET'])
 def get_doctors_by_specialization():
     try:
         specialization = request.args.get('specialization')
@@ -259,5 +305,4 @@ def allowed_photo(filename):
 def allowed_file(filename):
     allowed_extensions = {'pdf', 'jpg', 'jpeg', 'png'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
-
 

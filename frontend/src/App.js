@@ -19,16 +19,26 @@ import Statistics from './components/Analytics/Statistics';
 import NotFound from './components/NotFound';
 import ManageDoctors from './components/Admin/manage-doctor';
 import AddDoctor from './components/Admin/AddDoctor';
+import DoctorList from './components/Admin/DoctorList';
 
 const globalContext = createContext()
 
 function App() {
 
   const [globalState, setGlobalState] = useState({
-    username: "admin@example.com",
-    name: "Dummy",
-    email: "admin@example.com",
-    isDoctor: false,
+    name: "",
+    access_token: "",
+    blood_group: "",
+    blood_pressure: "",
+    date_of_birth: "",
+    created: "",
+    height: "",
+    id: "",
+    medical_history: "",
+    photos: "",
+    weight: "",
+    email: "",
+    medical_id: '123456789',
   });
 
   return (
@@ -46,13 +56,14 @@ function App() {
             <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
             <Route path='/view-report' element={<Reports/>} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/patient-profile" element={<PatientProfile />} />
+            <Route path="/about-me" element={<PatientProfile />} />
             <Route path="/doctor-profile" element={<DoctorProfile />} />
             <Route path="/schedule-appointment" element={<ScheduleAppointment />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/summarize-report" element={<ReportSummarization />} />
-            <Route path="/admin-dashboard/statistics" element={<Statistics />} />
+            <Route path="/admin-dashboard/view-statistics" element={<Statistics />} />
             <Route path="/admin-dashboard/manage-doctors" element={<ManageDoctors />} />
+            <Route path="/admin-dashboard/manage-doctors/view-all-doctors" element={<DoctorList/>} />
             <Route path="/admin-dashboard/manage-doctors/add-doctor" element={<AddDoctor />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

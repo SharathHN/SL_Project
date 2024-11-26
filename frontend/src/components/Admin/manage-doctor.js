@@ -12,7 +12,7 @@ function ManageDoctors() {
 
   const handleViewAllDoctors = () => {
     // Navigate to the list of doctors or fetch and display all doctors
-    console.log("View All Doctors button clicked");
+    navigate("/admin-dashboard/manage-doctors/view-all-doctors");
   };
 
   return (

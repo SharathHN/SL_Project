@@ -3,7 +3,10 @@ from werkzeug.utils import secure_filename
 from app.models import  db,Doctor,Appointment,Patient
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from elasticapm import capture_span
+import json
 import os
+import io 
+import base64
 from .. import bcrypt
 
 doctor_blueprint = Blueprint('doctor', __name__)
@@ -37,7 +40,7 @@ def view_appointments():
             return jsonify({'message': 'Unauthorized'}), 403
 
         # Retrieve appointments for the logged-in doctor
-        appointments = Appointment.query.filter_by(doctor_id=user_id).all()
+        appointments = Appointment.query.filter_by(doctor_id=user_id, status="scheduled").all()
         appointments_list = [
             {
                 'appointment_id': appointment.id,
@@ -171,6 +174,69 @@ def edit_appointment(appointment_id):
         return jsonify({'message': 'Appointment updated successfully'}), 200
     except Exception as e:
         return jsonify({'message': 'Error updating appointment', 'error': str(e)}), 500
+
+
+@doctor_blueprint.route('/api/doctors', methods=['GET'])
+@jwt_required()
+def get_all_doctors():
+    """
+    Retrieve all doctors and their details.
+    """
+    try:
+        # Verify user role (optional, if required to restrict access)
+        current_user = get_jwt_identity()
+        if current_user['role'] not in ['admin', 'patient', 'doctor']:
+            return jsonify({'message': 'Unauthorized access'}), 403
+
+        # Fetch all doctors
+        doctors = Doctor.query.all()
+
+        if not doctors:
+            return jsonify({'message': 'No doctors found'}), 404
+
+        # Format the response
+        doctor_list = [
+            {
+                'id': doctor.id,
+                'name': doctor.name,
+                'email': doctor.email,
+                'specialization': doctor.specialization,
+                'date_of_birth': doctor.date_of_birth.strftime('%Y-%m-%d') if doctor.date_of_birth else None,
+                'photos': doctor.photos,
+                'created_at': doctor.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            for doctor in doctors
+        ]
+
+        return jsonify({'doctors': doctor_list}), 200
+
+    except Exception as e:
+        return jsonify({'message': 'Error retrieving doctors', 'error': str(e)}), 500
+
+@doctor_blueprint.route('/api/doctor/upload-report', methods=['POST'])
+@jwt_required()
+def upload_report():
+    print("entered")
+    try:
+        # Verify doctor role
+        current_user = get_jwt_identity()
+        print(current_user)
+        if current_user['role'] != 'doctor':
+            return jsonify({'message': 'Unauthorized access'}), 403
+
+        # Fetch appointment and validate doctor
+        data = json.loads(request.data)
+        id = data["appointment_id"]
+        appointment = Appointment.query.get(id)
+
+        # Save the Base64 report in the database
+        appointment.reports = data['pdf']
+        db.session.commit()
+
+        return jsonify({'message': 'Report uploaded successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'message': 'Error uploading report', 'error': str(e)}), 500
 
 
 def allowed_photo(filename):

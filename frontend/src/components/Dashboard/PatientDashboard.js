@@ -4,6 +4,24 @@ import '../../styles/Dashboard.css';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { globalContext } from '../../App'
 
+
+const DefaultState = {
+  name: "",
+  access_token: "",
+  blood_group: "",
+  blood_pressure: "",
+  date_of_birth: "",
+  created: "",
+  height: "",
+  id: "",
+  medical_history: "",
+  photos: "",
+  weight: "",
+  email: "",
+  medical_id: '123456789',
+}
+
+
 function PatientDashboard() {
 
   // const [formData, setFormData] = useState({
@@ -15,26 +33,47 @@ function PatientDashboard() {
   const storedUserJWT = localStorage.getItem('patient_access_token');
   const navigate = useNavigate('/');
   
-  useEffect(()=>{
-    if(!storedUserJWT){
-      console.log('Rerouting to default route');
+  console.log(globalState['name'])
+
+    useEffect(()=>{
+        const appState = localStorage.getItem("globalState");
+        console.log("jkanslkfjn ", appState)
+        if(appState){
+          console.log("default use effect");
+          setGlobalState(JSON.parse(appState));
+        }
+    }, []);
+
+
+    useEffect(()=>{
+      if(!storedUserJWT){
+        console.log('Rerouting to default route');
+        navigate('/');
+      }
+      console.log("Global State useeffect");
+    }, [globalState]);
+    
+
+    const handlesPatientLogout = ()=>{
+      let storedUserJWT = localStorage.getItem('patient_access_token');
+      if(storedUserJWT){
+        localStorage.removeItem('patient_access_token');
+      }
+      setGlobalState((state)=>{
+        return (
+          DefaultState
+        )
+      })
       navigate('/');
     }
-  }, [globalState]);
   
 
-  const handlesPatientLogout = ()=>{
-    let storedUserJWT = localStorage.getItem('patient_access_token');
-    if(storedUserJWT){
-      localStorage.removeItem('patient_access_token');
-    }
-    navigate('/');
-  }
 
   return (
     <div className="dashboard">
       <div className="dashboard-navbar">
-        <h2 className="dashboard-title">Welcome, {}</h2>
+      
+        <h2 className="dashboard-title">Welcome, {globalState['name']}</h2>
         <div className='dashboard-navbar-right'>
           <button className='dashboard-button' onClick={handlesPatientLogout}>
           <LogoutIcon/>
@@ -45,9 +84,9 @@ function PatientDashboard() {
         <button 
           className="dashboard-button" 
           onClick={()=>{
-            // navigate('view-reports');
-            // setGlobalContext("Demo test");
-          }} // URL for View Reports section
+            navigate('/view-report');
+
+          }}
         >
           View Reports
         </button>

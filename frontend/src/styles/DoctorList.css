@@ -1,0 +1,40 @@
+.doctors-list {
+    margin: 20px auto;
+    max-width: 800px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
+  
+  .list-title {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .doctors-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+  
+  .doctors-table th,
+  .doctors-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+  }
+  
+  .doctors-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+  
+  .message {
+    color: red;
+    font-size: 18px;
+  }
+  
+  .no-doctors {
+    color: gray;
+    font-size: 18px;
+    margin-top: 20px;
+  }

@@ -11,6 +11,44 @@ from datetime import timedelta
 from config import Config
 import os
 import elasticapm
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from flask import Flask
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+# Load GPT-2 model and tokenizer
+MODEL_NAME = "TinyLlama/TinyLlama_v1.1"  # You can replace this with a lightweight decoder model
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model_base = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+print(model_base)
+
+def setup_tracer(app: Flask):
+    resource = Resource(attributes={
+    "service.name": "MedVault"  # Replace with your service name
+    })
+    # Initialize tracer provider
+    trace.set_tracer_provider(TracerProvider(resource=resource))
+    tracer_provider = trace.get_tracer_provider()
+
+    # Configure Jaeger Exporter
+    jaeger_exporter = JaegerExporter(
+        agent_host_name="localhost",  
+        agent_port=6831              
+    )
+
+    # Add BatchSpanProcessor
+    span_processor = BatchSpanProcessor(jaeger_exporter)
+    tracer_provider.add_span_processor(span_processor)
+
+    # Instrument the Flask app
+    FlaskInstrumentor().instrument_app(app)
+
+    return trace.get_tracer(__name__)
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -22,6 +60,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+    app.config["OPENTELEMETRY_SERVICE_NAME"] = "MedVault" 
     
 
     CORS(app)

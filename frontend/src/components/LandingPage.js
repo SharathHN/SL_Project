@@ -21,7 +21,7 @@ function LandingPage() {
         <div className="role-card doctor">
           <h2>Doctor</h2>
           <button onClick={() => navigate('/doctor-login')} className="landing-button">Login</button>
-          <button onClick={() => navigate('/doctor-signup')} className="landing-button">Sign Up</button>
+          {/* <button onClick={() => navigate('/doctor-signup')} className="landing-button">Sign Up</button> */}
         </div>
         <div className="role-card admin">
           <h2>Admin</h2>
