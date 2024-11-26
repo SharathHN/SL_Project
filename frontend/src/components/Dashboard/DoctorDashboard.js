@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/Dashboard.css';
 import {jwtDecode} from 'jwt-decode'; // Ensure you have installed jwt-decode with `npm install jwt-decode`
@@ -29,37 +29,33 @@ function DoctorDashboard() {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const token = localStorage.getItem('doctor_access_token'); // Get the token
-        const id = getDoctorIdFromJWT(); // Get the doctor ID from the token
+        const token = localStorage.getItem('doctor_access_token'); 
+        const id = getDoctorIdFromJWT(); 
 
         if (!id || !token) {
           console.error('Missing doctor ID or token');
           return;
         }
-
-        // Fetch appointments for the doctor
         const response = await fetch(`http://127.0.0.1:5000/api/appointments/doctor/${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`, // Add the JWT token
+            Authorization: `Bearer ${token}`, 
           },
         });
 
         if (response.ok) {
           const data = await response.json();
-
-          // Fetch patient names for each appointment
           const updatedAppointments = await Promise.all(
             data.appointments.map(async (appointment) => {
               const patientResponse = await fetch(
                 
-                `http://127.0.0.1:5000/api/doctor/patients/${appointment.patient_id}`, // Fetch patient details using patientId
+                `http://127.0.0.1:5000/api/doctor/patients/${appointment.patient_id}`,
                 {
                   method: 'GET',
                   headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`, // Add the JWT token
+                    Authorization: `Bearer ${token}`,
                   },
                 }
               );

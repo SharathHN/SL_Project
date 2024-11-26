@@ -1,17 +1,53 @@
-import React from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import { useNavigate } from 'react-router-dom'; // Assumes React Router is used for navigation
 import '../../styles/Dashboard.css';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { globalContext } from '../../App'
 
 function PatientDashboard() {
-  const navigate = useNavigate();
+
+  // const [formData, setFormData] = useState({
+  //   "username"
+  // });
+
+
+  const {globalState, setGlobalState} = useContext(globalContext);
+  const storedUserJWT = localStorage.getItem('patient_access_token');
+  const navigate = useNavigate('/');
+  
+  useEffect(()=>{
+    if(!storedUserJWT){
+      console.log('Rerouting to default route');
+      navigate('/');
+    }
+  }, [globalState]);
+  
+
+  const handlesPatientLogout = ()=>{
+    let storedUserJWT = localStorage.getItem('patient_access_token');
+    if(storedUserJWT){
+      localStorage.removeItem('patient_access_token');
+    }
+    navigate('/');
+  }
 
   return (
     <div className="dashboard">
-      <h2 className="dashboard-title">Patient Dashboard</h2>
+      <div className="dashboard-navbar">
+        <h2 className="dashboard-title">Welcome, {}</h2>
+        <div className='dashboard-navbar-right'>
+          <button className='dashboard-button' onClick={handlesPatientLogout}>
+          <LogoutIcon/>
+          </button>
+        </div>
+      </div>
       <div className="dashboard-buttons">
         <button 
           className="dashboard-button" 
-          onClick={() => navigate('/view-reports')} // URL for View Reports section
+          onClick={()=>{
+            // navigate('view-reports');
+            // setGlobalContext("Demo test");
+          }} // URL for View Reports section
         >
           View Reports
         </button>

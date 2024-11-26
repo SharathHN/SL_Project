@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { globalContext } from '../../../App';
 import '../../../styles/login.css';
 
 function PatientLogin() {
@@ -7,7 +8,8 @@ function PatientLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
+  const {globalState, setGlobalState} = useContext(globalContext)
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     
@@ -37,6 +39,11 @@ function PatientLogin() {
           localStorage.setItem('patient_access_token', data.access_token);
 
           // Redirect to the patient's dashboard
+          setGlobalState((state)=>{
+              return {
+                  ...state, username: "1"
+              }
+          })
           navigate('/patient-dashboard');
         } else {
           setError('Login failed. No token received.');

@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../../styles/login.css';
 
 function AdminLogin() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('Username');
+  const [password, setPassword] = useState('password');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(''); // Reset error state
-
     try {
       // Send a POST request to the backend for login
       const response = await fetch('http://127.0.0.1:5000/api/admin/login', {
@@ -62,7 +61,7 @@ function AdminLogin() {
           <h2>Admin Login</h2>
           {error && <p className="error-message">{error}</p>}
           <input
-            type="text"
+            type="email"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
